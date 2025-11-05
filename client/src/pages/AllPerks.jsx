@@ -4,33 +4,35 @@ import { api } from '../api'
 
 export default function AllPerks() {
   
- 
   const [perks, setPerks] = useState([])
-
   const [searchQuery, setSearchQuery] = useState('')
-
- 
   const [merchantFilter, setMerchantFilter] = useState('')
-
- 
   const [uniqueMerchants, setUniqueMerchants] = useState([])
-
-  
   const [loading, setLoading] = useState(true)
-
-  
   const [error, setError] = useState('')
 
   // ==================== SIDE EFFECTS WITH useEffect HOOK ====================
 
- /*
- TODO: HOOKS TO IMPLEMENT
- * useEffect Hook #1: Initial Data Loading
- * useEffect Hook #2: Auto-search on Input Change
+  // useEffect Hook #1: Initial Data Loading
+  // Runs once when component mounts to load all perks
+  useEffect(() => {
+    loadAllPerks()
+  }, []) // Empty dependency array = run only once on mount
 
-*/
+  // useEffect Hook #2: Auto-search on Input Change
+  // Debounced search - waits 500ms after user stops typing before searching
+  useEffect(() => {
+    // Set up a timer to delay the search
+    const timeoutId = setTimeout(() => {
+      loadAllPerks()
+    }, 500) // 500ms debounce delay
+    
+    // Cleanup function: cancel the previous timer if user types again
+    // This prevents unnecessary API calls while user is still typing
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery, merchantFilter]) // Re-run when search or filter changes
 
-  
+  // useEffect Hook #3: Extract Unique Merchants
   useEffect(() => {
     // Extract all merchant names from perks array
     const merchants = perks
@@ -47,7 +49,7 @@ export default function AllPerks() {
     // This effect depends on [perks], so it re-runs whenever perks changes
   }, [perks]) // Dependency: re-run when perks array changes
 
-  
+  // Load perks from API
   async function loadAllPerks() {
     // Reset error state before new request
     setError('')
@@ -83,7 +85,7 @@ export default function AllPerks() {
 
   // ==================== EVENT HANDLERS ====================
 
-  
+  // Handle form submission
   function handleSearch(e) {
     // Prevent default form submission behavior (page reload)
     e.preventDefault()
@@ -93,7 +95,7 @@ export default function AllPerks() {
     loadAllPerks()
   }
 
-  
+  // Reset all filters
   function handleReset() {
     // Reset search and filter states to empty
     // The useEffect with [searchQuery, merchantFilter] dependencies
@@ -103,13 +105,7 @@ export default function AllPerks() {
   }
 
   
-  
   return (
-    /*
-    TODO: HTML INPUT HANDLERS
- * Update state when user types in search box
- * update state when user selects filter
-    */
     <div className="max-w-6xl mx-auto space-y-6">
       
       {/* Page Title */}
@@ -126,7 +122,7 @@ export default function AllPerks() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            
+            {/* Search Input - Controlled Component */}
             <div>
               <label className="block text-sm font-medium text-zinc-700 mb-2">
                 <span className="material-symbols-outlined text-sm align-middle">search</span>
@@ -136,7 +132,8 @@ export default function AllPerks() {
                 type="text"
                 className="input"
                 placeholder="Enter perk name..."
-                
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <p className="text-xs text-zinc-500 mt-1">
                 Auto-searches as you type, or press Enter / click Search
@@ -151,7 +148,8 @@ export default function AllPerks() {
               </label>
               <select
                 className="input"
-                
+                value={merchantFilter}
+                onChange={(e) => setMerchantFilter(e.target.value)}
               >
                 <option value="">All Merchants</option>
                 
@@ -217,7 +215,7 @@ export default function AllPerks() {
           
           <Link
             key={perk._id}
-           
+            to={`/perks/${perk._id}`}
             className="card hover:shadow-lg transition-shadow cursor-pointer"
           >
             {/* Perk Title */}
@@ -289,4 +287,3 @@ export default function AllPerks() {
     </div>
   )
 }
-
